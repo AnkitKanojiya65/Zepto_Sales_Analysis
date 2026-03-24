@@ -1,4 +1,3 @@
--- Create Database named - ZeptoProject
 Use ZeptoProject;
 -- Created Table named - Zepto
 Create Table zepto (
@@ -52,3 +51,55 @@ order by count(sku_id) desc ;
 select * from zepto where mrp = 0  or discountedsellingprice = 0;
 -- we found one row with price = 0, now will delete it.
 delete from zepto where mrp = 0;
+
+-- Now as we can see the price in our table is in paise not rupees, so lets convert it
+update zepto
+set mrp =mrp/100.0,
+discountedsellingprice = discountedsellingprice/100.0;
+
+-- Q1. Find the top 10 best-value products based on the discount percentage.
+select distinct name,mrp,discountpercent from zepto
+order by  discountpercent desc 
+limit 10;
+ 
+-- Q2.What are the Products with High MRP but Out of Stock
+select distinct name,mrp,outofstock  from zepto where outofstock = TRUE and mrp>300
+order by mrp desc;
+
+-- Q3.Calculate Estimated Revenue for each category 
+SELECT Category, SUM(discountedsellingprice * availablequantity) as totalrevenue from Zepto
+group by Category order by totalrevenue ;
+
+-- Q4. Find all products where MRP is greater than ₹500 and discount is less than 10%.
+select name,mrp,discountpercent from Zepto where mrp>500 and discountpercent <10
+order by mrp desc,discountpercent desc;
+
+-- Q5. Identify the top 5 categories offering the highest average discount percentage.
+SELECT category, ROUND(AVG(discountpercent),2) as AvgDiscount
+from zepto  
+group by category 
+order by AVG(discountpercent) desc LIMIT 5;
+
+-- Q6. Find the price per gram for products above 100g and sort by best value.
+SELECT DISTINCT name,weightinGms,discountedSellingprice,
+round(discountedSellingprice/weightinGms,2) AS PriceperGms From zepto
+where weightinGms>=100
+ORDER BY PriceperGms ;
+
+-- Q7.Group the products into categories like Low, Medium, Bulk.
+SELECT distinct Category,weightinGms,
+CASE WHEN weightinGms <1000 THEN 'LOW'
+	WHEN weightinGms <5000 THEN 'MEDIUM'
+    ELSE 'BULK'
+    END AS WeightCategory
+From zepto;
+select * from zepto LIMIT 10;
+
+-- Q8.What is the Total Inventory Weight Per Category
+SELECT Category,
+sum(weightingms*availablequantity) as Totalweight
+from zepto
+Group by Category 
+order by Totalweight ;
+
+
